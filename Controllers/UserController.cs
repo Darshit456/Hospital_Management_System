@@ -7,9 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using BCrypt.Net;
 using Hospital_Managemant_System.Data;
 using Hospital_Management_System.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hospital_Management_System.Controllers
-
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -26,40 +26,44 @@ namespace Hospital_Management_System.Controllers
 
         // ✅ REGISTER API
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public IActionResult Register([FromBody] User user)
         {
+            // Check if email already exists
             if (_context.Users.Any(u => u.Email == user.Email))
-                return BadRequest("User already exists!");
+            {
+                return BadRequest("Email already exists!");
+            }
 
-            // Hash Password
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+            // Hash the password before saving
+            user.SetPassword(user.PasswordHash);
 
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            return Ok(new { message = "User registered successfully!" });
+            return Ok("User registered successfully!");
         }
 
+        // ✅ LOGIN API
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
 
-            if (user == null || user.PasswordHash != request.Password) // Compare plain text passwords
+            if (user == null || !user.VerifyPassword(request.Password))
             {
                 return Unauthorized("Invalid credentials!");
             }
 
-            // Generate JWT Token (Keep this part as it is)
+            // Generate JWT Token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),  // Ensure UserID is used
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
-        }),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email)
+                }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -70,29 +74,12 @@ namespace Hospital_Management_System.Controllers
             return Ok(new { Token = tokenString });
         }
 
-
-        // ✅ JWT Token Generation
-        private string GenerateJwtToken(User user)
+        // ✅ PROTECTED PROFILE ENDPOINT (INSIDE THE CLASS)
+        [Authorize]
+        [HttpGet("profile")]
+        public IActionResult GetProfile()
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
-                signingCredentials: credentials
-            );
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing"));
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Ok(new { message = "You have accessed a protected route!" });
         }
     }
 

@@ -9,6 +9,7 @@ namespace Hospital_Managemant_System.Data
         {
         }
         public DbSet<User> Users { get; set; }
+        public DbSet<Patient> Patients { get; set; }  
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

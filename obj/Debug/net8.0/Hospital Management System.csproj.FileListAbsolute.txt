@@ -171,3 +171,5 @@ D:\Hospital Management System\Hospital Managemant System\obj\Debug\net8.0\Hospit
 D:\Hospital Management System\Hospital Managemant System\obj\Debug\net8.0\ref\Hospital Management System.dll
 D:\Hospital Management System\Hospital Managemant System\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\Hospital Management System\Hospital Managemant System\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\Hospital Management System\Hospital Managemant System\obj\Debug\net8.0\Hospital Management System.sourcelink.json
+D:\Hospital Management System\Hospital Managemant System\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

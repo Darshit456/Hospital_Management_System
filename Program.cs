@@ -1,7 +1,22 @@
-﻿using Hospital_Managemant_System.Data;
+﻿using System.Text;
+using Hospital_Managemant_System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+// Add authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 // Add services to the container.
 
@@ -12,7 +27,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<HospitalDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add authorization
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+
+app.UseAuthentication();  // Enable authentication middleware
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -23,28 +44,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseAuthentication();  // Enable authentication middleware
+app.UseAuthorization();   // Enable authorization middleware
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<HospitalDbContext>();
-    try
-    {
-        if (dbContext.Database.CanConnect())  // Checks database connectivity
-        {
-            Console.WriteLine("✅ Successfully connected to the database!");
-        }
-        else
-        {
-            Console.WriteLine("❌ Failed to connect to the database.");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Database connection error: {ex.Message}");
-    }
-}
 
 app.Run();

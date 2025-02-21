@@ -19,7 +19,19 @@ namespace Hospital_Management_System.Models
        
         public required string PasswordHash { get; set; }  // Encrypted Password
 
-       
+        // Hash password before setting it
+        public void SetPassword(string password)
+        {
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
+        // Verify password during login
+        public bool VerifyPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, PasswordHash);
+        }
+
+
         public required string Role { get; set; }  // Can be "Admin", "Doctor", "Patient"
 
         // Navigation Properties
