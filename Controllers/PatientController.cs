@@ -59,6 +59,13 @@ namespace Hospital_Management_System.Controllers
             return Ok(patient);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllPatients()
+        {
+            var patientList = await _context.Patients.Include(p => p.User).ToListAsync();
+            return Ok(patientList);
+        }
+        
 
     }
 }
