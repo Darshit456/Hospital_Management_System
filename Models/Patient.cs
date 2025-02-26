@@ -12,12 +12,15 @@ public class Patient
     public int UserID { get; set; }  // Foreign Key from User Table  
 
     [Required, MaxLength(50)]
+    [Column("First Name")]
     public required string FirstName { get; set; }
 
     [Required, MaxLength(50)]
+    [Column("Last Name")]
     public required string LastName { get; set; }
 
     [Required]
+    [Column("Date Of Birth")]
     public DateTime DateOfBirth { get; set; }
 
     [Required, MaxLength(10)]
