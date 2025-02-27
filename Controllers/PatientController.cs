@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Hospital_Management_System.Models;
 using Microsoft.AspNetCore.Authorization;
 using Hospital_Managemant_System.Data;
+using Microsoft.AspNetCore.JsonPatch;
 
 //"Username" : "Darshit Gohil",
 //    "passwordHash": "Darshit123",
@@ -65,7 +66,35 @@ namespace Hospital_Management_System.Controllers
             var patientList = await _context.Patients.Include(p => p.User).ToListAsync();
             return Ok(patientList);
         }
-        
+
+        [HttpPatch("update/{id}")]
+        [Authorize] // Ensure only authenticated users can update patient details
+        public async Task<IActionResult> UpdatePatient(int id, [FromBody] JsonPatchDocument<Patient> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest("Invalid update request.");
+            }
+
+            var patient = await _context.Patients.Include(p => p.User).FirstOrDefaultAsync(p => p.PatientID == id);
+            if (patient == null)
+            {
+                return NotFound("Patient not found.");
+            }
+
+            patchDoc.ApplyTo(patient, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Patient details updated successfully." });
+        }
+
+
 
     }
 }
