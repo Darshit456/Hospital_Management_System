@@ -55,7 +55,7 @@ namespace Hospital_Management_System.Controllers
             if (patient == null)
             {
                 return NotFound("Patient not found.");
-            }
+            } 
 
             return Ok(patient);
         }
