@@ -4,6 +4,7 @@ using Hospital_Management_System.Models;
 using Microsoft.AspNetCore.Authorization;
 using Hospital_Managemant_System.Data;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 //"Username" : "Darshit Gohil",
 //    "passwordHash": "Darshit123",
@@ -94,7 +95,21 @@ namespace Hospital_Management_System.Controllers
             return Ok(new { message = "Patient details updated successfully." });
         }
 
+        [HttpDelete("Delete/{id}")]
+        [Authorize]
 
+        public async Task<IActionResult> DeletePatient(int id)
+        {
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientID == id);
+            if (patient == null)
+            {
+                return NotFound("Patient is not Found!");
+            }
 
+            _context.Patients.Remove(patient);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Patient has been Removed." });
+        }
     }
 }
