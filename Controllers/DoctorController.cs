@@ -5,6 +5,10 @@ using Hospital_Managemant_System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Hospital_Managemant_System.DTOs;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Hospital_Management_System.Controllers
 {
@@ -20,7 +24,7 @@ namespace Hospital_Management_System.Controllers
         }
 
         // ✅ Get all doctors
-        [HttpGet("All Doctors")]
+        [HttpGet("All")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<Doctor>>> GetDoctors()
         {
@@ -42,6 +46,7 @@ namespace Hospital_Management_System.Controllers
 
         // ✅ REGISTER DOCTOR API
         [HttpPost("register")]
+        
         public IActionResult RegisterDoctor([FromBody] DoctorRegistrationDTO doctorDto)
         {
             // 🌟 Check if email already exists
@@ -94,6 +99,7 @@ namespace Hospital_Management_System.Controllers
 
         // ✅ Update a doctor
         [HttpPatch("{id}")]
+        [Authorize]
         public async Task<IActionResult> PatchDoctor(int id, [FromBody] JsonPatchDocument<Doctor> patchDoc)
         {
             if (patchDoc == null)
@@ -116,7 +122,7 @@ namespace Hospital_Management_System.Controllers
 
     // ✅ Delete a doctor
     [HttpDelete("Delete/{id}")]
-        
+        [Authorize]
         public async Task<IActionResult> DeleteDoctor(int id)
         {
             var doctor = await _context.Doctors.FindAsync(id);

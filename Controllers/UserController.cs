@@ -43,7 +43,7 @@ namespace Hospital_Management_System.Controllers
             return Ok("User registered successfully!");
         }
 
-        // ✅ LOGIN API
+        // ✅ LOGIN API (Updated for both Doctor & Patient)
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -54,16 +54,28 @@ namespace Hospital_Management_System.Controllers
                 return Unauthorized("Invalid credentials!");
             }
 
-            // Generate JWT Token
+            // 🌟 Find role-specific details
+            object userDetails = null;
+            if (user.Role == "Doctor")
+            {
+                userDetails = _context.Doctors.FirstOrDefault(d => d.UserID == user.UserID);
+            }
+            else if (user.Role == "Patient")
+            {
+                userDetails = _context.Patients.FirstOrDefault(p => p.UserID == user.UserID);
+            }
+
+            // 🌟 Generate JWT Token with Role
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email)
-                }),
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role)  // 🔥 Add Role to Token
+        }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -71,8 +83,15 @@ namespace Hospital_Management_System.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return Ok(new { Token = tokenString });
+            // 🌟 Return token + user info
+            return Ok(new
+            {
+                Token = tokenString,
+                Role = user.Role,
+                UserDetails = userDetails
+            });
         }
+
 
         // ✅ PROTECTED PROFILE ENDPOINT (INSIDE THE CLASS)
         [Authorize]
