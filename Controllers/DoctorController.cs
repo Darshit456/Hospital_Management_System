@@ -4,6 +4,7 @@ using Hospital_Management_System.Models;
 using Hospital_Managemant_System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
+using Hospital_Managemant_System.DTOs;
 
 namespace Hospital_Management_System.Controllers
 {
@@ -39,14 +40,56 @@ namespace Hospital_Management_System.Controllers
             return doctor;
         }
 
-        // ✅ Create a new doctor
-        [HttpPost("Register")]
-       
-        public async Task<ActionResult<Doctor>> CreateDoctor(Doctor doctor)
+        // ✅ REGISTER DOCTOR API
+        [HttpPost("register")]
+        public IActionResult RegisterDoctor([FromBody] DoctorRegistrationDTO doctorDto)
         {
-            _context.Doctors.Add(doctor);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetDoctor), new { id = doctor.DoctorID }, doctor);
+            // 🌟 Check if email already exists
+            if (_context.Users.Any(u => u.Email == doctorDto.Email))
+            {
+                return BadRequest("Email already exists!");
+            }
+
+            // 🌟 Allow duplicate usernames but generate unique username if needed
+            string baseUsername = doctorDto.FirstName.ToLower() + "_" + doctorDto.LastName.ToLower();
+            string finalUsername = baseUsername;
+            int counter = 1;
+
+            while (_context.Users.Any(u => u.Username == finalUsername))
+            {
+                finalUsername = $"{baseUsername}{counter}"; // Append a number
+                counter++;
+            }
+
+            // 🌟 Create User Entry
+            var newUser = new User
+            {
+                Username = finalUsername,  // Use unique username
+                Email = doctorDto.Email,
+                Role = "Doctor",
+                PasswordHash = ""
+            };
+            newUser.SetPassword(doctorDto.Password); // Hash password
+
+            _context.Users.Add(newUser);
+            _context.SaveChanges(); // Save User first to generate UserId
+
+            // 🌟 Create Doctor Entry
+            var newDoctor = new Doctor
+            {
+                FirstName = doctorDto.FirstName,
+                LastName = doctorDto.LastName,
+                Specialization = doctorDto.Specialization,
+                Phone = doctorDto.Phone,
+                Email = doctorDto.Email,
+                Address = doctorDto.Address,
+                UserID = newUser.UserID // Link Doctor to User
+            };
+
+            _context.Doctors.Add(newDoctor);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Doctor registered successfully!", username = finalUsername });
         }
 
         // ✅ Update a doctor
