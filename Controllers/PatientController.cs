@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Hospital_Managemant_System.Data;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Hospital_Managemant_System.DTOs;
 
 //"Username" : "Darshit Gohil",
 //    "passwordHash": "Darshit123",
@@ -24,27 +25,58 @@ namespace Hospital_Management_System.Controllers
             _context = context;
         }
 
-        [HttpPost("create")]
-        [Authorize]  // Ensure only authenticated users can create patients
-        public async Task<IActionResult> CreatePatient([FromBody] Patient patient)
-        {
-            if (patient == null)
-            {
-                return BadRequest("Invalid patient data.");
-            }
+        [HttpPost("register")]
+                public IActionResult RegisterPatient([FromBody] PatientRegistrationDTO patientDto)
+                {
+                    // 🌟 Check if email already exists
+                    if (_context.Users.Any(u => u.Email == patientDto.Email))
+                    {
+                        return BadRequest("Email already exists!");
+                    }
 
-            // Ensure the UserID exists in the Users table
-            var userExists = await _context.Users.AnyAsync(u => u.UserID == patient.UserID);
-            if (!userExists)
-            {
-                return BadRequest("Invalid UserID. The user does not exist.");
-            }
+                    // 🌟 Generate unique username
+                    string baseUsername = patientDto.FirstName.ToLower() + "_" + patientDto.LastName.ToLower();
+                    string finalUsername = baseUsername;
+                    int counter = 1;
 
-            _context.Patients.Add(patient);
-            await _context.SaveChangesAsync();
+                    while (_context.Users.Any(u => u.Username == finalUsername))
+                    {
+                        finalUsername = $"{baseUsername}{counter}"; // Append number if duplicate
+                        counter++;
+                    }
 
-            return CreatedAtAction(nameof(GetPatientById), new { id = patient.PatientID }, patient);
-        }
+                    // 🌟 Create User Entry
+                    var newUser = new User
+                    {
+                        Username = finalUsername,
+                        Email = patientDto.Email,
+                        Role = "Patient",
+                        PasswordHash = ""
+                    };
+                    newUser.SetPassword(patientDto.Password); // Hash password
+
+                    _context.Users.Add(newUser);
+                    _context.SaveChanges(); // Save User first to generate UserId
+
+                    // 🌟 Create Patient Entry
+                    var newPatient = new Patient
+                    {
+                        FirstName = patientDto.FirstName,
+                        LastName = patientDto.LastName,
+                        DateOfBirth = patientDto.DateOfBirth,
+                        Phone = patientDto.Phone,
+                        Gender = patientDto.Gender,
+                        Email = patientDto.Email,
+                        Address = patientDto.Address,
+                        UserID = newUser.UserID // Link Patient to User
+                    };
+
+                    _context.Patients.Add(newPatient);
+                    _context.SaveChanges();
+
+                    return Ok(new { message = "Patient registered successfully!", username = finalUsername });
+                }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IActionResult> GetPatientById(int id)
@@ -61,7 +93,7 @@ namespace Hospital_Management_System.Controllers
             return Ok(patient);
         }
 
-        [HttpGet("All Patients")]
+        [HttpGet("All")]
         [Authorize]
         public async Task<IActionResult> GetAllPatients()
         {
@@ -98,7 +130,6 @@ namespace Hospital_Management_System.Controllers
 
         [HttpDelete("Delete/{id}")]
         [Authorize]
-
         public async Task<IActionResult> DeletePatient(int id)
         {
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientID == id);
