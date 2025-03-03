@@ -43,7 +43,7 @@ namespace Hospital_Management_System.Controllers
             return Ok("User registered successfully!");
         }
 
-        // ✅ LOGIN API (Updated for both Doctor & Patient)
+        // ✅ LOGIN API (Updated for Role-Based Redirection)
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -54,15 +54,23 @@ namespace Hospital_Management_System.Controllers
                 return Unauthorized("Invalid credentials!");
             }
 
-            // 🌟 Find role-specific details
+            // 🌟 Fetch role-specific details & assign dashboard URL
             object userDetails = null;
+            string dashboardUrl = "";
+
             if (user.Role == "Doctor")
             {
                 userDetails = _context.Doctors.FirstOrDefault(d => d.UserID == user.UserID);
+                dashboardUrl = "/doctor/dashboard";
             }
             else if (user.Role == "Patient")
             {
                 userDetails = _context.Patients.FirstOrDefault(p => p.UserID == user.UserID);
+                dashboardUrl = "/patient/dashboard";
+            }
+            else if (user.Role == "Admin")
+            {
+                dashboardUrl = "/admin/dashboard";
             }
 
             // 🌟 Generate JWT Token with Role
@@ -83,11 +91,12 @@ namespace Hospital_Management_System.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            // 🌟 Return token + user info
+            // 🌟 Return token + user info + dashboard URL
             return Ok(new
             {
                 Token = tokenString,
                 Role = user.Role,
+                DashboardUrl = dashboardUrl,
                 UserDetails = userDetails
             });
         }
