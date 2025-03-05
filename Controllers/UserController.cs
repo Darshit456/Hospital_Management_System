@@ -8,6 +8,7 @@ using BCrypt.Net;
 using Hospital_Managemant_System.Data;
 using Hospital_Management_System.Models;
 using Microsoft.AspNetCore.Authorization;
+using Hospital_Managemant_System.DTOs;
 
 namespace Hospital_Management_System.Controllers
 {
@@ -25,23 +26,41 @@ namespace Hospital_Management_System.Controllers
         }
 
         // ✅ REGISTER API
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] User user)
+        // ✅ ADMIN REGISTRATION (Only for Existing Admins)
+        [Authorize(Roles = "Admin")]
+        [HttpPost("create-admin")]
+        public IActionResult CreateAdmin([FromBody] AdminRegistrationDTO adminDto)
         {
+            if (string.IsNullOrWhiteSpace(adminDto.Email) || string.IsNullOrWhiteSpace(adminDto.Password))
+            {
+                return BadRequest("Email and Password are required!");
+            }
+
             // Check if email already exists
-            if (_context.Users.Any(u => u.Email == user.Email))
+            if (_context.Users.Any(u => u.Email == adminDto.Email))
             {
                 return BadRequest("Email already exists!");
             }
 
-            // Hash the password before saving
-            user.SetPassword(user.PasswordHash);
+            // Create User object
+            var newAdmin = new User
+            {
+                Username = adminDto.Username,
+                Email = adminDto.Email,
+                Role = "Admin",  // 🔥 Assign Role explicitly
+                PasswordHash = ""
+            };
 
-            _context.Users.Add(user);
+            // Hash password
+            newAdmin.SetPassword(adminDto.Password);
+
+            // Save admin user
+            _context.Users.Add(newAdmin);
             _context.SaveChanges();
 
-            return Ok("User registered successfully!");
+            return Ok("Admin registered successfully!");
         }
+
 
         // ✅ LOGIN API (Updated for Role-Based Redirection)
         [HttpPost("login")]
