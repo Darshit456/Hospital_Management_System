@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 public class Appointment
 {
+   
     [Key]
     public int AppointmentID { get; set; }  // Primary Key
 
@@ -14,18 +16,31 @@ public class Appointment
     public int DoctorID { get; set; }  // Foreign Key for Doctor Table
 
     [Required]
-    public DateTime AppointmentDate { get; set; }
+    public DateTime AppointmentDateTime { get; set; }
 
     [MaxLength(255)]
     public string? Reason { get; set; }
+    
+    [Required]
+    [Column(TypeName = "nvarchar(50)")]
+    public string Status { get; set; } = AppointmentStatus.Pending; // Default value
 
-    [Required, MaxLength(50)]
-    public required string Status { get; set; }  // Added Status Column  
+
+
 
     // Foreign Key Relationships
     [ForeignKey("PatientID")]
-    public Patient? Patient { get; set; }
+    public virtual Patient? Patient { get; set; }
 
     [ForeignKey("DoctorID")]
-    public Doctor? Doctor { get; set; }
+    public virtual Doctor? Doctor { get; set; }
+}
+public static class AppointmentStatus
+{
+    public const string Pending = "Pending";
+    public const string Accepted = "Accepted";
+    public const string Rejected = "Rejected";
+    public const string Completed = "Completed";
+
+    public static readonly string[] AllStatuses = { Pending, Accepted, Rejected, Completed };
 }

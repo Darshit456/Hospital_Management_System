@@ -1,0 +1,52 @@
+Admin ID
+{
+	"Email" : "Darshitgohil123@gmail.com",
+	"Password":"Darshit"
+}
+
+Patients ID
+
+{
+  "FirstName": "Emily",
+  "LastName": "Clark",
+  "DateOfBirth": "1995-06-15",
+  "Gender": "Female",
+  "Phone": "9123456789",
+  "Email": "emily.clark@example.com",
+  "Password": "PatientPass123",
+  "Address": "456 Wellness Road, LA"
+}
+
+{
+  "FirstName": "Michael",
+  "LastName": "Brown",
+  "DateOfBirth": "1988-11-20",
+  "Gender": "Male",
+  "Phone": "9345678901",
+  "Email": "michael.brown@example.com",
+  "Password": "MikePass456",
+  "Address": "321 Healthy Way, TX"
+}
+
+Doctors ID
+
+{
+  "FirstName": "Sarah",
+  "LastName": "Williams",
+  "Specialization": "Dermatologist",
+  "Phone": "9234567890",
+  "Email": "sarah.williams@example.com",
+  "Password": "DocSecure789",
+  "Address": "789 SkinCare Ave, SF"
+}
+
+{
+  "FirstName": "James",
+  "LastName": "Anderson",
+  "Specialization": "Cardiologist",
+  "Phone": "9876543210",
+  "Email": "james.anderson@example.com",
+  "Password": "SecurePass123",
+  "Address": "123 Heartbeat Street, NY"
+}
+
