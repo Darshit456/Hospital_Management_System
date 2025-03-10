@@ -1,57 +1,92 @@
 ﻿using System.Text;
-using Hospital_Managemant_System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
-
+using Hospital_Managemant_System.Data;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add authentication
+
+// ✅ Configure Authentication (JWT)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            ),
             ValidateIssuer = false,
             ValidateAudience = false
         };
     });
 
-// Add services to the container.
+// ✅ Configure Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("DoctorPolicy", policy => policy.RequireRole("Doctor"));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireRole("Patient"));
+});
 
+// ✅ Add Swagger with JWT Support
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer <your_token>'"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+// ✅ Add services
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+// ✅ Configure Database
 builder.Services.AddDbContext<HospitalDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddControllers().AddNewtonsoftJson(); // Enables JSON Patch functionality
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
-
-// Add authorization
-builder.Services.AddAuthorization();
+// ✅ Enable JSON Patch Support
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 var app = builder.Build();
 
+// ✅ Middleware Configuration
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseAuthentication();  // Enable authentication middleware
-
-// Configure the HTTP request pipeline.
+// ✅ Enable Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthentication();  // Enable authentication middleware
-app.UseAuthorization();   // Enable authorization middleware
-
+// ✅ Map Controllers
 app.MapControllers();
-
 
 app.Run();
