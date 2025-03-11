@@ -50,30 +50,65 @@ namespace Hospital_Managemant_System.Controllers
 
             return Ok(new { Token = appointment.AppointmentID, Message = "Appointment booked successfully." });
         }
-    
+
 
         // ✅ Update Appointment Status (Only Doctors & Admins)
         [HttpPut("{appointmentId}/UpdateStatus")]
         [Authorize(Roles = "Doctor,Admin")]
         public async Task<IActionResult> UpdateAppointmentStatus(int appointmentId, [FromBody] string newStatus)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value;
+            try
+            {
+                // ✅ Extract user details from JWT token
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                var userRoleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
 
-            if (!AppointmentStatus.AllStatuses.Contains(newStatus))
-                return BadRequest(new { Message = "Invalid appointment status." });
+                if (userIdClaim == null || userRoleClaim == null)
+                    return Unauthorized(new { Message = "Invalid token. Missing user information." });
 
-            var appointment = await _context.Appointments.FindAsync(appointmentId);
-            if (appointment == null)
-                return NotFound(new { Message = "Appointment not found." });
+                int userId = int.Parse(userIdClaim.Value);
+                string userRole = userRoleClaim.Value;
 
-            if (userRole == "Doctor" && appointment.DoctorID != userId)
-                return Forbid();
+                // ✅ Fetch DoctorID using UserID (For Doctors)
+                int? doctorId = null;
+                if (userRole == "Doctor")
+                {
+                    var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == userId);
+                    if (doctor != null)
+                        doctorId = doctor.DoctorID; // Convert UserID to DoctorID
+                }
 
-            appointment.Status = newStatus;
-            await _context.SaveChangesAsync();
-            return Ok(new { Message = "Appointment status updated successfully." });
+                Console.WriteLine($"User ID: {userId}, Role: {userRole}, Mapped DoctorID: {doctorId}");
+
+                // ✅ Validate Status
+                if (!AppointmentStatus.AllStatuses.Contains(newStatus))
+                    return BadRequest(new { Message = "Invalid appointment status." });
+
+                // ✅ Fetch Appointment
+                var appointment = await _context.Appointments.FindAsync(appointmentId);
+                if (appointment == null)
+                    return NotFound(new { Message = "Appointment not found." });
+
+                Console.WriteLine($"Appointment DoctorID: {appointment.DoctorID}");
+
+                // ✅ Allow only respective doctors or admins
+                if (userRole == "Doctor" && (doctorId == null || appointment.DoctorID != doctorId))
+                    return Forbid();
+
+                // ✅ Update and Save
+                appointment.Status = newStatus;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Appointment status updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred.", Error = ex.Message });
+            }
         }
+
+
+
 
         // ✅ Delete Appointment (Only Admins & Patients)
         [HttpDelete("{appointmentId}/Delete")]
