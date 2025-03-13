@@ -51,7 +51,6 @@ namespace Hospital_Managemant_System.Controllers
             return Ok(new { Token = appointment.AppointmentID, Message = "Appointment booked successfully." });
         }
 
-
         // ✅ Update Appointment Status (Only Doctors & Admins)
         [HttpPut("{appointmentId}/UpdateStatus")]
         [Authorize(Roles = "Doctor,Admin")]
@@ -59,7 +58,6 @@ namespace Hospital_Managemant_System.Controllers
         {
             try
             {
-                // ✅ Extract user details from JWT token
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 var userRoleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
 
@@ -69,33 +67,28 @@ namespace Hospital_Managemant_System.Controllers
                 int userId = int.Parse(userIdClaim.Value);
                 string userRole = userRoleClaim.Value;
 
-                // ✅ Fetch DoctorID using UserID (For Doctors)
                 int? doctorId = null;
                 if (userRole == "Doctor")
                 {
                     var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == userId);
                     if (doctor != null)
-                        doctorId = doctor.DoctorID; // Convert UserID to DoctorID
+                        doctorId = doctor.DoctorID;
                 }
 
                 Console.WriteLine($"User ID: {userId}, Role: {userRole}, Mapped DoctorID: {doctorId}");
 
-                // ✅ Validate Status
                 if (!AppointmentStatus.AllStatuses.Contains(newStatus))
                     return BadRequest(new { Message = "Invalid appointment status." });
 
-                // ✅ Fetch Appointment
                 var appointment = await _context.Appointments.FindAsync(appointmentId);
                 if (appointment == null)
                     return NotFound(new { Message = "Appointment not found." });
 
                 Console.WriteLine($"Appointment DoctorID: {appointment.DoctorID}");
 
-                // ✅ Allow only respective doctors or admins
                 if (userRole == "Doctor" && (doctorId == null || appointment.DoctorID != doctorId))
                     return Forbid();
 
-                // ✅ Update and Save
                 appointment.Status = newStatus;
                 await _context.SaveChangesAsync();
 
@@ -106,9 +99,6 @@ namespace Hospital_Managemant_System.Controllers
                 return StatusCode(500, new { Message = "An error occurred.", Error = ex.Message });
             }
         }
-
-
-
 
         // ✅ Delete Appointment (Only Admins & Patients)
         [HttpDelete("{appointmentId}/Delete")]
@@ -122,13 +112,19 @@ namespace Hospital_Managemant_System.Controllers
             if (appointment == null)
                 return NotFound(new { Message = "Appointment not found." });
 
-            if (userRole == "Patient" && appointment.PatientID != userId)
-                return Forbid();
+            if (userRole == "Patient")
+            {
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == userId);
+                if (patient == null || appointment.PatientID != patient.PatientID)
+                    return Forbid();
+            }
 
             _context.Appointments.Remove(appointment);
             await _context.SaveChangesAsync();
+
             return Ok(new { Message = "Appointment deleted successfully." });
         }
+
         // ✅ Get Appointments (Role-based Access)
         [HttpGet]
         [Authorize(Roles = "Patient,Doctor,Admin")]
@@ -137,19 +133,24 @@ namespace Hospital_Managemant_System.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
 
-            // Role-based filtering
+            // 🔹 FIXED: Fetch correct PatientID for Patients
             if (userRole == "Patient")
             {
-                patientId = userId; // Patient can only see their own data
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == userId);
+                if (patient == null) return Forbid();
+                patientId = patient.PatientID; // Assign correct PatientID
             }
             else if (userRole == "Doctor")
             {
                 var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == userId);
                 if (doctor == null) return Forbid();
-                doctorId = doctor.DoctorID; // Doctor can only see their own appointments
+                doctorId = doctor.DoctorID;
             }
 
-            var query = _context.Appointments.AsNoTracking().Include(a => a.Patient).Include(a => a.Doctor).AsQueryable();
+            var query = _context.Appointments.AsNoTracking()
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                .AsQueryable();
 
             if (doctorId.HasValue) query = query.Where(a => a.DoctorID == doctorId);
             if (patientId.HasValue) query = query.Where(a => a.PatientID == patientId);
@@ -167,6 +168,5 @@ namespace Hospital_Managemant_System.Controllers
 
             return Ok(appointments);
         }
-
     }
 }
