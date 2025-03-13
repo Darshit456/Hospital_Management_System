@@ -125,6 +125,7 @@ namespace Hospital_Managemant_System.Controllers
             return Ok(new { Message = "Appointment deleted successfully." });
         }
 
+
         // ✅ Get Appointments (Role-based Access)
         [HttpGet]
         [Authorize(Roles = "Patient,Doctor,Admin")]
