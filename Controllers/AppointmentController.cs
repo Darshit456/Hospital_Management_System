@@ -129,55 +129,44 @@ namespace Hospital_Managemant_System.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Message = "Appointment deleted successfully." });
         }
-
-        // ✅ Get Doctor’s Appointments (Only Doctors)
-        [HttpGet("Doctor/{doctorId}")]
-        [Authorize(Roles = "Doctor,Admin")]
-        public async Task<IActionResult> GetDoctorAppointments(int doctorId)
+        // ✅ Get Appointments (Role-based Access)
+        [HttpGet]
+        [Authorize(Roles = "Patient,Doctor,Admin")]
+        public async Task<IActionResult> GetAppointments(int? doctorId = null, int? patientId = null, DateTime? date = null, string status = null)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
 
-            if (userRole == "Doctor" && doctorId != userId)
-                return Forbid();
+            // Role-based filtering
+            if (userRole == "Patient")
+            {
+                patientId = userId; // Patient can only see their own data
+            }
+            else if (userRole == "Doctor")
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == userId);
+                if (doctor == null) return Forbid();
+                doctorId = doctor.DoctorID; // Doctor can only see their own appointments
+            }
 
-            var appointments = await _context.Appointments
-                .Where(a => a.DoctorID == doctorId)
-                .Select(a => new
-                {
-                    Token = a.AppointmentID,
-                    PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
-                    DateTime = a.AppointmentDateTime,
-                    Status = a.Status
-                })
-                .ToListAsync();
+            var query = _context.Appointments.AsNoTracking().Include(a => a.Patient).Include(a => a.Doctor).AsQueryable();
+
+            if (doctorId.HasValue) query = query.Where(a => a.DoctorID == doctorId);
+            if (patientId.HasValue) query = query.Where(a => a.PatientID == patientId);
+            if (date.HasValue) query = query.Where(a => a.AppointmentDateTime.Date == date.Value.Date);
+            if (!string.IsNullOrEmpty(status)) query = query.Where(a => a.Status == status);
+
+            var appointments = await query.Select(a => new
+            {
+                Token = a.AppointmentID,
+                PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
+                DateTime = a.AppointmentDateTime,
+                Status = a.Status
+            }).ToListAsync();
 
             return Ok(appointments);
         }
 
-        // ✅ Get Patient’s Appointments (Only Patients)
-        [HttpGet("Patient/{patientId}")]
-        [Authorize(Roles = "Patient,Admin")]
-        public async Task<IActionResult> GetPatientAppointments(int patientId)
-        {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (userRole == "Patient" && patientId != userId)
-                return Forbid();
-
-            var appointments = await _context.Appointments
-                .Where(a => a.PatientID == patientId)
-                .Select(a => new
-                {
-                    Token = a.AppointmentID,
-                    DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
-                    DateTime = a.AppointmentDateTime,
-                    Status = a.Status
-                })
-                .ToListAsync();
-
-            return Ok(appointments);
-        }
     }
 }
