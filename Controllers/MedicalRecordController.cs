@@ -2,7 +2,10 @@
 using Hospital_Management_System.Models;
 using Hospital_Management_System.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Hospital_Managemant_System.Data;
 
 namespace Hospital_Management_System.Controllers
@@ -18,9 +21,9 @@ namespace Hospital_Management_System.Controllers
             _context = context;
         }
 
-        // POST: api/MedicalRecords (Create Medical Record)
+        // ✅ Create Medical Record (Only Doctors)
         [HttpPost]
-        [Authorize(Roles = "Doctor")] // Only doctors can create records
+        [Authorize(Roles = "Doctor")]
         public IActionResult CreateMedicalRecord([FromBody] MedicalRecordDTO recordDto)
         {
             if (recordDto == null)
@@ -34,69 +37,70 @@ namespace Hospital_Management_System.Controllers
                 Diagnosis = recordDto.Diagnosis,
                 Prescription = recordDto.Prescription,
                 Notes = recordDto.Notes,
-                RecordDate = recordDto.RecordDate
+                RecordDate = recordDto.RecordDate < (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ? DateTime.Now : recordDto.RecordDate
             };
 
             _context.MedicalRecords.Add(medicalRecord);
-            if (medicalRecord.RecordDate < (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue)
-            {
-                medicalRecord.RecordDate = DateTime.Now; // Or some default valid date
-            }
-
             _context.SaveChanges();
 
             return CreatedAtAction(nameof(GetMedicalRecord), new { id = medicalRecord.RecordID }, medicalRecord);
         }
 
-        // GET: api/MedicalRecords/{id} (Get Medical Record by ID)
+        // ✅ Get Medical Record by ID (Role-Based Access)
         [HttpGet("{id}")]
-        [Authorize(Roles = "Doctor,Admin,Patient")] // Doctors/Admins can access any record, Patients only their own
-        public IActionResult GetMedicalRecord(int id)
+        [Authorize(Roles = "Doctor,Admin,Patient")]
+        public async Task<IActionResult> GetMedicalRecord(int id)
         {
-            var record = _context.MedicalRecords.FirstOrDefault(r => r.RecordID == id);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+
+            int? patientId = null;
+            int? doctorId = null;
+
+            if (userRole == "Patient")
+            {
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == userId);
+                if (patient == null) return Forbid();
+                patientId = patient.PatientID;
+            }
+            else if (userRole == "Doctor")
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == userId);
+                if (doctor == null) return Forbid();
+                doctorId = doctor.DoctorID;
+            }
+
+            var record = await _context.MedicalRecords.FindAsync(id);
             if (record == null)
                 return NotFound("Medical record not found.");
 
-            // Get logged-in user info
-            var userRole = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value);
-
-            if (userRole == "Patient" && record.PatientID != userId)
+            if (userRole == "Patient" && record.PatientID != patientId)
                 return Forbid("Access denied.");
 
-            var recordDto = new MedicalRecordDTO
-            {
-                RecordID = record.RecordID,
-                PatientID = record.PatientID,
-                DoctorID = record.DoctorID,
-                AppointmentID = record.AppointmentID,
-                Diagnosis = record.Diagnosis,
-                Prescription = record.Prescription,
-                Notes = record.Notes,
-                RecordDate = record.RecordDate
-            };
-
-            return Ok(recordDto);
+            return Ok(record);
         }
 
-        // GET: api/MedicalRecords/patient/{patientId} (Get All Records for a Patient)
+        // ✅ Get All Medical Records for a Patient
         [HttpGet("patient/{patientId}")]
-        [Authorize(Roles = "Doctor,Admin,Patient")] // Doctor/Admin can view any patient’s records, Patient can view their own
-        public IActionResult GetRecordsForPatient(int patientId)
+        [Authorize(Roles = "Doctor,Admin,Patient")]
+        public async Task<IActionResult> GetRecordsForPatient(int patientId)
         {
-            var userRole = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-            var userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
 
-            if (userRole == "Patient" && userId != patientId)
-                return Forbid("Access denied.");
+            if (userRole == "Patient")
+            {
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == userId);
+                if (patient == null || patient.PatientID != patientId) return Forbid();
+            }
 
-            var records = _context.MedicalRecords.Where(r => r.PatientID == patientId).ToList();
+            var records = await _context.MedicalRecords.Where(r => r.PatientID == patientId).ToListAsync();
             return Ok(records);
         }
 
-        // PUT: api/MedicalRecords/{id} (Update Medical Record)
+        // ✅ Update Medical Record (Only Doctors)
         [HttpPut("{id}")]
-        [Authorize(Roles = "Doctor")] // Only doctors can update records
+        [Authorize(Roles = "Doctor")]
         public IActionResult UpdateMedicalRecord(int id, [FromBody] MedicalRecordDTO recordDto)
         {
             var record = _context.MedicalRecords.FirstOrDefault(r => r.RecordID == id);
@@ -112,9 +116,9 @@ namespace Hospital_Management_System.Controllers
             return Ok(record);
         }
 
-        // DELETE: api/MedicalRecords/{id} (Delete Medical Record)
+        // ✅ Delete Medical Record (Only Admins)
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] // Only admins can delete records
+        [Authorize(Roles = "Admin")]
         public IActionResult DeleteMedicalRecord(int id)
         {
             var record = _context.MedicalRecords.FirstOrDefault(r => r.RecordID == id);
