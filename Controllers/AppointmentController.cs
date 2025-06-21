@@ -164,6 +164,7 @@ namespace Hospital_Managemant_System.Controllers
                 PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
                 DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
                 DateTime = a.AppointmentDateTime,
+                Reason = a.Reason,
                 Status = a.Status
             }).ToListAsync();
 
