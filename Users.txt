@@ -28,6 +28,17 @@ Patients ID
   "Address": "321 Healthy Way, TX"
 }
 
+{
+  "FirstName": "Piyush",
+  "LastName": "Gohil",
+  "DateOfBirth": "2002-06-06",
+  "Gender": "Male",
+  "Phone": "9723666302",
+  "Email": "gohilpiyush@gmail.com",
+  "Password": "Piyush123",
+  "Address": "Bhavnagar, Gujarat, India"
+}
+
 Doctors ID
 
 {
