@@ -161,6 +161,7 @@ namespace Hospital_Managemant_System.Controllers
             var appointments = await query.Select(a => new
             {
                 Token = a.AppointmentID,
+                PatientID = a.PatientID,
                 PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
                 DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
                 DateTime = a.AppointmentDateTime,
