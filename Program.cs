@@ -8,7 +8,13 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Configure Authentication (JWT)
+// ✅ Add SignalR
+builder.Services.AddSignalR();
+
+// ✅ Add HttpClient for internal API calls
+builder.Services.AddHttpClient();
+
+// ✅ Configure Authentication (JWT) with SignalR support
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -20,6 +26,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ),
             ValidateIssuer = false,
             ValidateAudience = false
+        };
+
+        // ✅ NEW: Configure JWT for SignalR
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/notificationHub")))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -61,7 +84,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ✅ Add services
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 
 // ✅ Configure Database
@@ -69,8 +92,7 @@ builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// ✅ Enable JSON Patch Support
-builder.Services.AddControllers().AddNewtonsoftJson();
+// ✅ Configure CORS (Updated for SignalR)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -83,15 +105,15 @@ builder.Services.AddCors(options =>
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowCredentials();
+        .AllowCredentials(); // Required for SignalR
     });
 });
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
-// ✅ Middleware Configuration
+// ✅ Middleware Configuration (ORDER MATTERS!)
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend"); // Must be before Authentication
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -104,5 +126,8 @@ if (app.Environment.IsDevelopment())
 
 // ✅ Map Controllers
 app.MapControllers();
+
+// ✅ NEW: Map SignalR Hub
+app.MapHub<Hospital_Managemant_System.NotificationHub>("/notificationHub");
 
 app.Run();

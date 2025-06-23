@@ -15,10 +15,12 @@ namespace Hospital_Managemant_System.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly HospitalDbContext _context;
+        private readonly HttpClient _httpClient;
 
-        public AppointmentController(HospitalDbContext context)
+        public AppointmentController(HospitalDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         // ✅ Create Appointment (Patients & Admins)
@@ -47,6 +49,9 @@ namespace Hospital_Managemant_System.Controllers
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
+
+            // ✅ NEW: Send notification to doctor about new appointment
+            await SendAppointmentNotification(appointment.AppointmentID);
 
             return Ok(new { Token = appointment.AppointmentID, Message = "Appointment booked successfully." });
         }
@@ -89,8 +94,12 @@ namespace Hospital_Managemant_System.Controllers
                 if (userRole == "Doctor" && (doctorId == null || appointment.DoctorID != doctorId))
                     return Forbid();
 
+                var oldStatus = appointment.Status;
                 appointment.Status = newStatus;
                 await _context.SaveChangesAsync();
+
+                // ✅ NEW: Send status change notification to patient
+                await SendStatusChangeNotification(appointmentId, newStatus, oldStatus);
 
                 return Ok(new { Message = "Appointment status updated successfully." });
             }
@@ -124,7 +133,6 @@ namespace Hospital_Managemant_System.Controllers
 
             return Ok(new { Message = "Appointment deleted successfully." });
         }
-
 
         // ✅ Get Appointments (Role-based Access)
         [HttpGet]
@@ -160,16 +168,92 @@ namespace Hospital_Managemant_System.Controllers
 
             var appointments = await query.Select(a => new
             {
-                Token = a.AppointmentID,
-                PatientID = a.PatientID,
-                PatientName = a.Patient.FirstName + " " + a.Patient.LastName,
-                DoctorName = a.Doctor.FirstName + " " + a.Doctor.LastName,
-                DateTime = a.AppointmentDateTime,
-                Reason = a.Reason,
-                Status = a.Status
+                token = a.AppointmentID.ToString(), // Changed to lowercase to match your frontend
+                patientID = a.PatientID,
+                patientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                patientPhone = a.Patient.Phone,
+                patientEmail = a.Patient.Email,
+                doctorID = a.DoctorID,
+                dateTime = a.AppointmentDateTime,
+                reason = a.Reason,
+                status = a.Status
             }).ToListAsync();
 
             return Ok(appointments);
+        }
+
+        // ✅ NEW: Get appointments for a specific doctor (used by frontend)
+        [HttpGet("doctor/{doctorId}")]
+        [Authorize(Roles = "Doctor,Admin")]
+        public async Task<IActionResult> GetDoctorAppointments(int doctorId)
+        {
+            try
+            {
+                var appointments = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .Where(a => a.DoctorID == doctorId)
+                    .Select(a => new
+                    {
+                        token = a.AppointmentID.ToString(),
+                        patientID = a.PatientID,
+                        patientName = a.Patient.FirstName + " " + a.Patient.LastName,
+                        patientPhone = a.Patient.Phone,
+                        patientEmail = a.Patient.Email,
+                        doctorID = a.DoctorID,
+                        dateTime = a.AppointmentDateTime,
+                        reason = a.Reason,
+                        status = a.Status
+                    })
+                    .ToListAsync();
+
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Error retrieving appointments", Error = ex.Message });
+            }
+        }
+
+        // ✅ NEW: Helper method to send appointment notification
+        private async Task SendAppointmentNotification(int appointmentId)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "https://localhost:7195/api/Notification/send-appointment-notification",
+                    appointmentId);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Failed to send appointment notification: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending appointment notification: {ex.Message}");
+            }
+        }
+
+        // ✅ NEW: Helper method to send status change notification
+        private async Task SendStatusChangeNotification(int appointmentId, string newStatus, string oldStatus)
+        {
+            try
+            {
+                var payload = new { appointmentId, newStatus, oldStatus };
+                var response = await _httpClient.PostAsJsonAsync(
+                    "https://localhost:7195/api/Notification/send-status-change",
+                    payload);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Failed to send status change notification: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending status change notification: {ex.Message}");
+            }
         }
     }
 }
