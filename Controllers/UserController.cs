@@ -61,6 +61,37 @@ namespace Hospital_Management_System.Controllers
             return Ok("Admin registered successfully!");
         }
 
+        // ✅ FIXED Delete User - Handles Database Triggers
+        [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Use raw SQL to bypass database trigger issues
+                // The CASCADE DELETE will handle all related records automatically
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Users WHERE UserID = {0}", id);
+
+                return Ok(new { message = "User and all related data deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                Console.WriteLine($"Error deleting user {id}: {ex.Message}");
+
+                return StatusCode(500, new
+                {
+                    message = "Error deleting user",
+                    error = ex.Message
+                });
+            }
+        }
 
         // ✅ LOGIN API (Updated for Role-Based Redirection)
         [HttpPost("login")]
@@ -119,7 +150,6 @@ namespace Hospital_Management_System.Controllers
                 UserDetails = userDetails
             });
         }
-
 
         // ✅ PROTECTED PROFILE ENDPOINT (INSIDE THE CLASS)
         [Authorize]
