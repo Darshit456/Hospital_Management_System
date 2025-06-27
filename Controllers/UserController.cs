@@ -25,7 +25,152 @@ namespace Hospital_Management_System.Controllers
             _configuration = configuration;
         }
 
-        // ✅ REGISTER API
+        // ✅ GET ALL ADMINS (Admin only)
+        [Authorize(Roles = "Admin")]
+        [HttpGet("all-admins")]
+        public async Task<IActionResult> GetAllAdmins()
+        {
+            try
+            {
+                var admins = await _context.Users
+                    .Where(u => u.Role == "Admin")
+                    .Select(u => new
+                    {
+                        UserID = u.UserID,
+                        Username = u.Username,
+                        Email = u.Email,
+                        Role = u.Role
+                    })
+                    .ToListAsync();
+
+                return Ok(admins);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching admins", error = ex.Message });
+            }
+        }
+
+        // ✅ UPDATE ADMIN (Admin only)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update-admin/{id}")]
+        public async Task<IActionResult> UpdateAdmin(int id, [FromBody] UpdateAdminDTO updateDto)
+        {
+            try
+            {
+                var admin = await _context.Users.FindAsync(id);
+
+                if (admin == null)
+                {
+                    return NotFound("Admin not found");
+                }
+
+                if (admin.Role != "Admin")
+                {
+                    return BadRequest("User is not an admin");
+                }
+
+                // Update fields if provided
+                if (!string.IsNullOrWhiteSpace(updateDto.Username))
+                {
+                    // Check if username already exists
+                    var existingUser = await _context.Users
+                        .Where(u => u.Username == updateDto.Username && u.UserID != id)
+                        .FirstOrDefaultAsync();
+
+                    if (existingUser != null)
+                    {
+                        return BadRequest("Username already exists");
+                    }
+
+                    admin.Username = updateDto.Username;
+                }
+
+                if (!string.IsNullOrWhiteSpace(updateDto.Email))
+                {
+                    // Check if email already exists
+                    var existingEmail = await _context.Users
+                        .Where(u => u.Email == updateDto.Email && u.UserID != id)
+                        .FirstOrDefaultAsync();
+
+                    if (existingEmail != null)
+                    {
+                        return BadRequest("Email already exists");
+                    }
+
+                    admin.Email = updateDto.Email;
+                }
+
+                if (!string.IsNullOrWhiteSpace(updateDto.Password))
+                {
+                    admin.SetPassword(updateDto.Password);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Admin updated successfully",
+                    admin = new
+                    {
+                        UserID = admin.UserID,
+                        Username = admin.Username,
+                        Email = admin.Email,
+                        Role = admin.Role
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating admin", error = ex.Message });
+            }
+        }
+
+        // ✅ DELETE ADMIN (Admin only) - Enhanced version
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete-admin/{id}")]
+        public async Task<IActionResult> DeleteAdmin(int id)
+        {
+            try
+            {
+                // Get current user ID from token
+                var currentUserId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+                if (currentUserId != null && int.Parse(currentUserId) == id)
+                {
+                    return BadRequest("You cannot delete your own admin account");
+                }
+
+                var admin = await _context.Users.FindAsync(id);
+
+                if (admin == null)
+                {
+                    return NotFound("Admin not found");
+                }
+
+                if (admin.Role != "Admin")
+                {
+                    return BadRequest("User is not an admin");
+                }
+
+                // Check if this is the last admin
+                var adminCount = await _context.Users.CountAsync(u => u.Role == "Admin");
+                if (adminCount <= 1)
+                {
+                    return BadRequest("Cannot delete the last admin in the system");
+                }
+
+                // Use raw SQL to bypass database trigger issues
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Users WHERE UserID = {0}", id);
+
+                return Ok(new { message = "Admin deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting admin", error = ex.Message });
+            }
+        }
+
         // ✅ ADMIN REGISTRATION (Only for Existing Admins)
         [Authorize(Roles = "Admin")]
         [HttpPost("create-admin")]
@@ -40,6 +185,12 @@ namespace Hospital_Management_System.Controllers
             if (_context.Users.Any(u => u.Email == adminDto.Email))
             {
                 return BadRequest("Email already exists!");
+            }
+
+            // Check if username already exists
+            if (_context.Users.Any(u => u.Username == adminDto.Username))
+            {
+                return BadRequest("Username already exists!");
             }
 
             // Create User object
@@ -58,7 +209,17 @@ namespace Hospital_Management_System.Controllers
             _context.Users.Add(newAdmin);
             _context.SaveChanges();
 
-            return Ok("Admin registered successfully!");
+            return Ok(new
+            {
+                message = "Admin registered successfully!",
+                admin = new
+                {
+                    UserID = newAdmin.UserID,
+                    Username = newAdmin.Username,
+                    Email = newAdmin.Email,
+                    Role = newAdmin.Role
+                }
+            });
         }
 
         // ✅ FIXED Delete User - Handles Database Triggers
@@ -123,10 +284,10 @@ namespace Hospital_Management_System.Controllers
                 // ✅ FIXED: Now returning admin details instead of null
                 userDetails = new
                 {
-                    UserID = user.UserID,
-                    Username = user.Username,
-                    Email = user.Email,
-                    Role = user.Role
+                    userID = user.UserID,
+                    username = user.Username,
+                    email = user.Email,
+                    role = user.Role
                 };
                 dashboardUrl = "/admin/dashboard";
             }
@@ -173,5 +334,13 @@ namespace Hospital_Management_System.Controllers
     {
         public required string Email { get; set; }
         public required string Password { get; set; }
+    }
+
+    // ✅ Update Admin DTO
+    public class UpdateAdminDTO
+    {
+        public string? Username { get; set; }
+        public string? Email { get; set; }
+        public string? Password { get; set; }
     }
 }
