@@ -120,6 +120,14 @@ namespace Hospital_Management_System.Controllers
             }
             else if (user.Role == "Admin")
             {
+                // ✅ FIXED: Now returning admin details instead of null
+                userDetails = new
+                {
+                    UserID = user.UserID,
+                    Username = user.Username,
+                    Email = user.Email,
+                    Role = user.Role
+                };
                 dashboardUrl = "/admin/dashboard";
             }
 
@@ -130,10 +138,10 @@ namespace Hospital_Management_System.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)  // 🔥 Add Role to Token
-        }),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserID.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role)  // 🔥 Add Role to Token
+                }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -147,7 +155,7 @@ namespace Hospital_Management_System.Controllers
                 Token = tokenString,
                 Role = user.Role,
                 DashboardUrl = dashboardUrl,
-                UserDetails = userDetails
+                UserDetails = userDetails  // Now includes admin details
             });
         }
 
