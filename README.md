@@ -1,23 +1,24 @@
-# 🏥 MEDISOFT - Hospital Management System
+# 🏥 Healthspan Vista - Hospital Management System
 
 <div align="center">
-<img src="./src/assets/Medisoft%20Hospital%20Management%20Logo.png" alt="MEDISOFT Logo" width="200"/>
+<img src="./src/assets/Healthcare%20Technology%20Firm%20Logo.png" alt="Healthspan Vista Logo" width="200"/>
 
 
-**Digitizing Healthcare for a Healthier Tomorrow** ✨
+**Your Complete Healthcare Horizon** ✨
 
-<img src="./src/assets/Screenshots/login.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/1.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/2.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/3.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/4.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/5.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/6.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/7.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/8.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/9.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/10.png" alt="MEDISOFT Logo" width="1000"/>
-<img src="./src/assets/Screenshots/11.png" alt="MEDISOFT Logo" width="1000"/>
+<img src="./src/assets/Screenshots/1.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/2.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/3.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/4.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/5.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/6.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/7.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/8.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/9.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/10.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/11.png" alt="Healthspan Vista Logo" width="1000"/>
+<img src="./src/assets/Screenshots/12.png" alt="Healthspan Vista Logo" width="1000"/>
+
 
 
 
@@ -34,43 +35,41 @@
 
 ---
 
-*A modern hospital management system that bridges the gap between patients, healthcare providers, and administrative staff through an intuitive web interface.*
+*See Beyond. Care Better. A modern hospital management system that provides a comprehensive view of healthcare operations through an intuitive web interface.*
 
 </div>
 
-## 🌟 Why MEDISOFT ?
+## 🌟 Why Healthspan Vista?
 
-> **"Healthcare shouldn't be complicated. MEDISOFT makes it simple."**
+> **"Where Health Meets Insight - Healthspan Vista provides the complete healthcare horizon you need."**
 
-Modern healthcare management requires intuitive, secure, and efficient digital solutions. MEDISOFT delivers exactly that with a complete end-to-end solution.
+Modern healthcare management requires a panoramic view of all operations. Healthspan Vista delivers exactly that - a comprehensive, birds-eye view of your entire healthcare ecosystem.
 
 ### 🎯 The Problem We Solve
-- 😩 **Complex healthcare workflows** that slow down patient care
-- 📱 **Outdated interfaces** that frustrate users
+- 😩 **Fragmented healthcare data** scattered across multiple systems
+- 📱 **Limited visibility** into patient journeys and outcomes
 - 🔒 **Security concerns** with sensitive medical data
-- 📊 **Poor communication** between patients and healthcare providers
-- ⏰ **Time-consuming administrative tasks**
+- 📊 **Poor communication** between different healthcare stakeholders
+- ⏰ **Inefficient workflows** that delay patient care
 
 ### 💡 Our Solution
-✅ **Streamlined workflows** for all user types  
-✅ **Modern, responsive design** that works everywhere  
-✅ **Enterprise-grade security** with role-based access  
-✅ **Real-time notifications** and updates  
-✅ **Automated processes** that save time and reduce errors
+✅ **Panoramic healthcare view** - see everything at a glance  
+✅ **Integrated workflows** across all departments  
+✅ **Enterprise-grade security** with comprehensive access control  
+✅ **Real-time insights** for better decision making  
+✅ **Streamlined operations** that put patients first
 
 ---
 
 ## 🎬 Demo Videos
 
-*Experience MEDISOFT in action through our comprehensive demo videos*
-<h2 align="center">🎬 MEDISOFT Demo Video</h2>
+*Experience Healthspan Vista in action through our comprehensive demo videos*
+<h2 align="center">🎬 Healthspan Vista Demo Video</h2>
 <p align="center">
-  <a href="https://youtu.be/7dr-4KOUeFk" target="_blank">
-    <img src="https://img.youtube.com/vi/7dr-4KOUeFk/hqdefault.jpg" alt="Watch MEDISOFT Demo" width="700">
+  <a href="https://youtu.be/cZ4-nkHM4n0" target="_blank">
+    <img src="https://img.youtube.com/vi/cZ4-nkHM4n0/hqdefault.jpg" alt="Watch Healthspan Vista Demo" width="700">
   </a>
 </p>
-
-
 *Videos will showcase real-world usage scenarios and highlight key functionalities*
 
 ---
@@ -81,13 +80,13 @@ Modern healthcare management requires intuitive, secure, and efficient digital s
 
 | 🏷️ **Feature Category** | 🔥 **What's Included** | 💪 **Why It Matters** |
 |:---|:---|:---|
-| **🔐 Authentication** | JWT-based secure login, Role-based access control | Your data stays protected |
-| **👥 Multi-Role System** | Patient, Doctor, Admin dashboards | Everyone gets what they need |
-| **📱 Responsive Design** | Mobile-first approach, Works on any device | Healthcare on the go |
-| **⚡ Real-Time Updates** | Live notifications, Instant data sync | Stay informed instantly |
-| **🎨 Modern UI/UX** | Beautiful gradients, Smooth animations | Delightful user experience |
-| **📊 Data Management** | Medical records, Appointments, User profiles | Everything in one place |
-| **🗄️ Robust Database** | SQL Server with backup/restore | Enterprise-grade data storage |
+| **🔐 Vista Security** | JWT-based secure login, Role-based access control | Your data stays protected |
+| **👥 Vista Roles** | Patient, Doctor, Admin dashboards | Everyone gets their personalized vista |
+| **📱 Vista Mobile** | Mobile-first approach, Works on any device | Healthcare vista on the go |
+| **⚡ Vista Updates** | Live notifications, Instant data sync | Real-time healthcare horizon |
+| **🎨 Vista Design** | Beautiful gradients, Smooth animations | Delightful visual experience |
+| **📊 Vista Analytics** | Medical records, Appointments, User profiles | Complete healthcare overview |
+| **🗄️ Vista Database** | SQL Server with backup/restore | Enterprise-grade data vista |
 
 </div>
 
@@ -103,9 +102,9 @@ graph TB
     B --> C[🏥 .NET 8 Backend]
     C --> D[💾 SQL Server Database]
     
-    E[👨‍⚕️ Doctor Dashboard] --> A
-    F[👤 Patient Portal] --> A
-    G[⚙️ Admin Panel] --> A
+    E[👨‍⚕️ Doctor Vista] --> A
+    F[👤 Patient Vista] --> A
+    G[⚙️ Admin Vista] --> A
     
     C --> H[🔒 JWT Authentication]
     C --> I[📧 Notification Service]
@@ -159,7 +158,7 @@ dotnet restore
 dotnet run
 ```
 
-**🎉 Your development environment is ready! Frontend runs on `http://localhost:5173`**
+**🎉 Your Healthspan Vista development environment is ready! Frontend runs on `http://localhost:5173`**
 
 ---
 
@@ -230,8 +229,8 @@ dotnet run
 #### 1️⃣ **Clone Repositories**
 ```bash
 # Create project directory
-mkdir medisoft-project
-cd medisoft-project
+mkdir healthspan-vista-project
+cd healthspan-vista-project
 
 # Clone frontend
 git clone https://github.com/Darshit456/HMS_Frontend.git frontend
@@ -249,7 +248,7 @@ npm install
 
 # Create environment file
 echo "VITE_API_URL=https://localhost:7195" > .env.local
-echo "VITE_APP_NAME=MEDISOFT" >> .env.local
+echo "VITE_APP_NAME=Healthspan Vista" >> .env.local
 ```
 
 #### 3️⃣ **Backend Setup**
@@ -284,9 +283,9 @@ dotnet watch run
 
 ## 👥 User Roles & Dashboards
 
-### 🏥 **Admin Dashboard** - Complete System Control
+### 🏥 **Admin Vista** - Complete System Control
 <details>
-<summary>🔍 <strong>Click to see Admin features</strong></summary>
+<summary>🔍 <strong>Click to see Admin Vista features</strong></summary>
 
 **🎛️ Administrative Powers:**
 - 👨‍⚕️ **User Management**: Create, edit, delete doctors, patients, and admins
@@ -302,12 +301,12 @@ dotnet watch run
 
 </details>
 
-### 👨‍⚕️ **Doctor Dashboard** - Medical Excellence
+### 👨‍⚕️ **Doctor Vista** - Medical Excellence
 <details>
-<summary>🔍 <strong>Click to see Doctor features</strong></summary>
+<summary>🔍 <strong>Click to see Doctor Vista features</strong></summary>
 
 **🩺 Medical Tools:**
-- 📅 **Today's Schedule**: View and manage daily appointments
+- 📅 **Vista Schedule**: View and manage daily appointments
 - 🔄 **Patient Requests**: Accept or decline appointment requests
 - 📋 **Medical Records**: Create and update patient medical records
 - 👤 **Profile Management**: Update personal and professional information
@@ -320,9 +319,9 @@ dotnet watch run
 
 </details>
 
-### 👤 **Patient Portal** - Healthcare at Your Fingertips
+### 👤 **Patient Vista** - Healthcare at Your Fingertips
 <details>
-<summary>🔍 <strong>Click to see Patient features</strong></summary>
+<summary>🔍 <strong>Click to see Patient Vista features</strong></summary>
 
 **🏥 Patient Tools:**
 - 📅 **Appointment Booking**: Request appointments with preferred doctors
@@ -342,16 +341,16 @@ dotnet watch run
 
 ## 🎨 UI/UX Design Philosophy
 
-### 🌈 **Design System**
+### 🌈 **Vista Design System**
 
-Our design system is built on the principle of **"Healthcare should feel welcoming, not intimidating"**.
+Our design system is built on the principle of **"Healthcare should provide clarity, not complexity"**.
 
-#### 🎨 **Color Palette**
+#### 🎨 **Vista Color Palette**
 ```css
 /* Primary Colors */
---primary-blue: #4F46E5     /* Trust & Reliability */
---primary-purple: #7C3AED   /* Innovation & Care */
---primary-emerald: #10B981  /* Health & Growth */
+--vista-blue: #4F46E5     /* Trust & Reliability */
+--vista-purple: #7C3AED   /* Innovation & Care */
+--vista-emerald: #10B981  /* Health & Growth */
 
 /* Gradient Magic */
 --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)
@@ -359,20 +358,20 @@ Our design system is built on the principle of **"Healthcare should feel welcomi
 --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%)
 ```
 
-#### ✨ **Animation System**
+#### ✨ **Vista Animation System**
 - **🌊 Smooth Transitions**: 300ms ease-out for all interactions
 - **🎭 Micro-interactions**: Hover effects that provide instant feedback
 - **📱 Loading States**: Beautiful loading animations that reduce perceived wait time
 - **🎪 Page Transitions**: Seamless navigation between sections
 
-#### 📱 **Responsive Strategy**
+#### 📱 **Responsive Vista Strategy**
 ```javascript
 // Breakpoint System
 const breakpoints = {
-  sm: '640px',   // Mobile
-  md: '768px',   // Tablet
-  lg: '1024px',  // Desktop
-  xl: '1280px'   // Large Desktop
+  sm: '640px',   // Mobile Vista
+  md: '768px',   // Tablet Vista
+  lg: '1024px',  // Desktop Vista
+  xl: '1280px'   // Large Vista
 }
 ```
 
@@ -470,9 +469,9 @@ HMS_Frontend/
 │   ├── 📁 components/         # Reusable UI components
 │   ├── 📁 pages/             # Page components
 │   │   ├── 📁 Dashboard/
-│   │   │   ├── 📁 Admin/     # Admin dashboard components
-│   │   │   ├── 📁 Doctor/    # Doctor dashboard components
-│   │   │   └── 📁 Patient/   # Patient dashboard components
+│   │   │   ├── 📁 Admin/     # Admin vista components
+│   │   │   ├── 📁 Doctor/    # Doctor vista components
+│   │   │   └── 📁 Patient/   # Patient vista components
 │   │   └── 📁 Login/         # Authentication pages
 │   ├── 📁 services/          # API integration layer
 │   │   ├── 📁 Admin/         # Admin-specific APIs
@@ -535,7 +534,7 @@ Hospital_Management_System/
 
 ## 🔒 Security Features
 
-### 🛡️ **Security Layers**
+### 🛡️ **Vista Security Layers**
 
 #### 1️⃣ **Authentication & Authorization**
 - 🔐 **JWT Token-based Authentication**
@@ -613,7 +612,7 @@ VITE_API_URL=https://localhost:7195
 VITE_API_TIMEOUT=30000
 
 # Application Settings
-VITE_APP_NAME=MEDISOFT
+VITE_APP_NAME=Healthspan Vista
 VITE_APP_VERSION=1.0.0
 
 # Development Settings
@@ -632,8 +631,8 @@ Update `appsettings.json`:
    },
    "JwtSettings": {
       "SecretKey": "YourSecretKeyHere",
-      "Issuer": "HospitalManagementSystem",
-      "Audience": "HospitalUsers",
+      "Issuer": "HealthspanVista",
+      "Audience": "VistaUsers",
       "ExpiryMinutes": 60
    },
    "Logging": {
@@ -710,7 +709,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY publish/ .
 EXPOSE 80
-ENTRYPOINT ["dotnet", "HospitalManagementSystem.dll"]
+ENTRYPOINT ["dotnet", "HealthspanVista.dll"]
 ```
 
 ### ☁️ **Azure Deployment** (Planned)
@@ -848,8 +847,8 @@ If you found this project helpful, please consider giving it a ⭐️
 
 **Made with ❤️ by Darshit Gohil**
 
-*"Building the future of healthcare, one line of code at a time."* 💻🏥
+*"See Beyond. Care Better. Transforming Healthcare Vision."* 💻🏥
 
-**🚀 Ready to revolutionize healthcare management? Get started today!**
+**🚀 Ready to expand your healthcare horizon? Get started with Healthspan Vista today!**
 
 </div>
